@@ -58,8 +58,8 @@ namespace ProAgil.WebAPI
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseStaticFiles();
             app.UseStaticFiles(new StaticFileOptions(){
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot")),
-                RequestPath = new PathString("/wwwroot")
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"Resources")),
+                RequestPath = new PathString("/Resources")
             });
             app.UseMvc();
         }
