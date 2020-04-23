@@ -2,19 +2,26 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using ProAgil.Domain.Identity;
 using ProAgil.Repository;
 
 namespace ProAgil.WebAPI
@@ -31,13 +38,55 @@ namespace ProAgil.WebAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IProAgilRepository, ProAgilRepository>();
             services.AddDbContext<ProAgilContext>(
-                x => x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+                x => x.UseSqlite(Configuration.GetConnectionString("DefaultConnection"))
+            );
 
+            // configuração do password
+            IdentityBuilder builder = services.AddIdentityCore<User>(option => 
+            {
+                // validação do password
+                option.Password.RequireDigit = false; // tirar caracteres especiais
+                option.Password.RequireNonAlphanumeric = false; // tirar numeros e letras
+                option.Password.RequireLowercase = false; // tirar letras maiusculas e minusculas
+                option.Password.RequireUppercase = false; // tirar letras maiusculas
+                option.Password.RequiredLength = 4; // definir quantidade de numeros
+            });
+
+
+            builder = new IdentityBuilder(builder.UserType, typeof(Role), builder.Services);
+            builder.AddEntityFrameworkStores<ProAgilContext>();
+            builder.AddRoleValidator<RoleValidator<Role>>();
+            builder.AddRoleManager<RoleManager<Role>>();
+            builder.AddSignInManager<SignInManager<User>>();
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options => 
+                    {
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            ValidateIssuerSigningKey = true,
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII
+                                .GetBytes(Configuration.GetSection("AppSettings:Token").Value)),
+                            ValidateIssuer = false,
+                            ValidateAudience = false
+                        };
+                    }
+                );
+
+            // Politica de autenticação de todas as controllers
+            services.AddMvc(options => {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            })
+            .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+            .AddJsonOptions(opt => opt.SerializerSettings.ReferenceLoopHandling = 
+            Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+            services.AddScoped<IProAgilRepository, ProAgilRepository>();
             services.AddAutoMapper();
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddCors();
         }
 
@@ -53,6 +102,8 @@ namespace ProAgil.WebAPI
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseAuthentication();
 
             // app.UseHttpsRedirection();
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
