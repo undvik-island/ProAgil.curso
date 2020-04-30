@@ -2,7 +2,7 @@
 
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { TooltipModule, ModalModule } from 'ngx-bootstrap';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
@@ -24,10 +24,14 @@ import { PalestrantesComponent } from './palestrantes/palestrantes.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ContatosComponent } from './contatos/contatos.component';
 import { TituloComponent } from './_shared/titulo/titulo.component';
+import { UserComponent } from './user/user.component';
+import { LoginComponent } from './user/login/login.component';
+import { RegistrationComponent } from './user/registration/registration.component';
 
 // Service
 
 import { EventoService } from './_service/evento.service';
+import { AuthInterceptor } from './auth/auth.interceptor';
 
 
 
@@ -40,6 +44,9 @@ import { EventoService } from './_service/evento.service';
       DashboardComponent,
       ContatosComponent,
       TituloComponent,
+      UserComponent,
+      LoginComponent,
+      RegistrationComponent,
       DateTimeFormatPipePipe
    ],
    imports: [
@@ -60,7 +67,12 @@ import { EventoService } from './_service/evento.service';
       ReactiveFormsModule
    ],
    providers: [
-      EventoService
+      EventoService,
+      {
+         provide: HTTP_INTERCEPTORS,
+         useClass: AuthInterceptor,
+         multi: true
+      }
    ],
    bootstrap: [
       AppComponent

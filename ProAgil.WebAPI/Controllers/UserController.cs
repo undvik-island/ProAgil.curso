@@ -17,6 +17,8 @@ using ProAgil.WebAPI.Dtos;
 
 namespace ProAgil.WebAPI.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class UserController : ControllerBase
     {
         private readonly IConfiguration _config;
@@ -36,7 +38,6 @@ namespace ProAgil.WebAPI.Controllers
         }
 
         [HttpGet("GetUser")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetUser()
         {
             return Ok(new UserDto());
@@ -52,7 +53,7 @@ namespace ProAgil.WebAPI.Controllers
 
                 var result = await _userManager.CreateAsync(user, userDto.Password);
 
-                var userToReturn = _mapper.Map<UserDto>(result);
+                var userToReturn = _mapper.Map<UserDto>(user);
 
                 if (result.Succeeded)
                 {
@@ -67,8 +68,8 @@ namespace ProAgil.WebAPI.Controllers
             }   
         }
 
-         [HttpPost("Login")]
-         [AllowAnonymous]
+        [HttpPost("Login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(UserLoginDto userLogin)
         {
             try
