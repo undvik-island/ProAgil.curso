@@ -65,6 +65,7 @@ export class EventosComponent implements OnInit {
   }
 
   getEventos() {
+    this.dataAtual = new Date().getMilliseconds().toString();
     this.eventoService.getAllEvento().subscribe(
       // tslint:disable-next-line: variable-name
       (_eventos: Evento[]) => {
@@ -101,7 +102,7 @@ export class EventosComponent implements OnInit {
   }
 
   uploadImage() {
-    if (this.modoSalvar == 'post') {
+    if (this.modoSalvar === 'post') {
       const nomeArquivo = this.evento.imagemURL.split('\\', 3);
       this.evento.imagemURL = nomeArquivo[2];
 
@@ -155,7 +156,7 @@ export class EventosComponent implements OnInit {
             this.getEventos();
             this.toastr.success('Editado com sucesso!');
           }, err => {
-            this.toastr.error('Erro ao editar.');
+            this.toastr.error(`Erro ao editar: ${err}`);
             console.log(err);
           }
         );

@@ -8,7 +8,7 @@ import { map } from 'rxjs/operators';
 })
 export class AuthService {
 
-  baseURL = 'http://localhost:5000/api/user/';
+  baseURL = 'http://localhost:5000/v1/user/';
   jwtHelper = new JwtHelperService();
   decodedToken: any;
 
@@ -22,6 +22,7 @@ export class AuthService {
         if (user) {
           localStorage.setItem('token', user.token);
           this.decodedToken = this.jwtHelper.decodeToken(user.token);
+          sessionStorage.setItem('username', this.decodedToken.unique_name);
         }
       })
       );

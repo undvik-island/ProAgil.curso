@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, ɵConsole } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Evento } from '../_models/Evento';
@@ -24,6 +24,7 @@ export class EventoService {
     }
 
     postUpload(file: File, name: string) {
+      console.log(file);
       const fileToUpload = file[0] as File;
       const formData = new FormData();
       formData.append('file', fileToUpload, name);

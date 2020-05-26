@@ -12,6 +12,7 @@ namespace ProAgil.Repository
 
         void Delete<T>(T entity) where T : class;
 
+        void DeleteRange<T>(T[] entityArray) where T : class;
         Task<bool> SaveChangesAsync();  
 
         Task<Evento[]> GetAllEventosAsync(bool includePalestrante);
@@ -22,6 +23,6 @@ namespace ProAgil.Repository
 
         Task<Palestrante[]> GetAllPalestrantesAsyncByname(string name, bool includeEvento);
 
-        Task<Palestrante> GetPalestranteAsyncById(int palestranteId, bool includeEvento); 
+        Task<Palestrante> GetPalestranteAsyncById(int palestranteId, bool includeEvento);
     }
 }
